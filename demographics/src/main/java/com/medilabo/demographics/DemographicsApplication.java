@@ -11,4 +11,3 @@ public class DemographicsApplication {
 	}
 
 }
-//todo:  repository with one model for patients and one repo for patients, just one controller. view/get; use spring data

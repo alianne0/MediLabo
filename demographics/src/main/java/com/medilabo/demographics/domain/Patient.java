@@ -2,6 +2,10 @@ package com.medilabo.demographics.domain;
 import jakarta.persistence.*;
 import lombok.*;
 
+/**
+ * Domain for the patient class that defines the fields
+ */
+@Data
 @Entity
 @Table(name = "patient")
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
@@ -27,5 +31,4 @@ public class Patient {
     private String address;
 
     private String phone;
-    private String notes;
 }
