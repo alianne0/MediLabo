@@ -1,24 +1,20 @@
 package com.medilabo.demographics.controller;
-//todo: put the gateway in front of the backend or in front of the frontend too. they talk to each other via gateway
-//frontend receives all the requests first
 //check for token present(jwt) on each backend
 //todo: add security, jwt, sprint security
 //todo: look at docker, yaml in the root level. each microservice has a docker file
 //todo: test cases from sprint, make sure they work and u can use them in tests
-//double check
 import com.medilabo.demographics.domain.Patient;
 import com.medilabo.demographics.service.PatientService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-//todo: add tests for controller
 /**
  * Controller class for the Demographics Controller
  */
 @Slf4j
 @RestController
-//@CrossOrigin(origins = "http://localhost:3000")
 @RequestMapping("/patients")
 public class PatientController {
 
@@ -37,15 +33,17 @@ public class PatientController {
      */
     @GetMapping
     public List<Patient> getAllPatients(
-            @RequestParam(required = false) String lastName) {
+            @RequestParam(required = false) String lastName, Authentication authentication) {
+        System.out.println("AUTH IN CONTROLLER: " + authentication);
 
         log.debug("GET /patients called with lastName={}", lastName);
+        System.out.println("AUTH IN CONTROLLER: " + authentication);
 
         if (lastName != null && !lastName.isBlank()) {
             log.info("Fetching patients by last name: {}", lastName);
             return patientService.findByLastName(lastName);
         }
-
+        System.out.println("AUTH IN CONTROLLER: " + authentication);
         log.info("Fetching all patients");
         return patientService.getAllPatients();
     }

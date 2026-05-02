@@ -1,6 +1,4 @@
 package com.medilabo.demographics.service;
-//todo: test for service
-//todo: javadoc for all classes
 import com.medilabo.demographics.domain.Patient;
 import com.medilabo.demographics.repository.PatientRepository;
 import org.springframework.stereotype.Service;
