@@ -10,6 +10,7 @@
         <processorPath useClasspath="false">
           <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.44/lombok-1.18.44.jar" />
         </processorPath>
+        <module name="gateway" />
         <module name="demographics" />
       </profile>
       <profile name="Annotation profile for notes" enabled="true">
@@ -26,6 +27,7 @@
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
       <module name="demographics" options="-parameters" />
+      <module name="gateway" options="-parameters" />
       <module name="notes" options="-parameters" />
     </option>
   </component>

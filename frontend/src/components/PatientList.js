@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 
-const API_URL = "http://localhost:8080/api/patients";
+const API_URL = "http://localhost:8081/api/patients";
 const TOKEN_KEY = "auth_token";
 
 function PatientList() {
@@ -17,7 +17,8 @@ function PatientList() {
     setLoading(true);
     setError(null);
 
-    const token = localStorage.getItem(TOKEN_KEY);
+    const token = localStorage.getItem(TOKEN_KEY);console.log("TOKEN:", token);
+
 
     if (!token) {
       navigate("/login");
@@ -27,10 +28,9 @@ function PatientList() {
     try {
       const response = await axios.get(API_URL, {
         headers: {
-          Authorization: `Bearer ${token}`
+          Authorization: `Bearer ${token}`,
         },
-        withCredentials: true,
-        params: lastName ? { lastName } : {}
+        params: lastName ? { lastName } : {},
       });
 
       setPatients(response.data);
@@ -79,35 +79,36 @@ function PatientList() {
         <p>No patients found.</p>
       )}
 
-      {!loading && !error && patients.map((p) => (
-        <div
-          key={p.id}
-          className="border rounded p-3 mb-2 d-flex justify-content-between align-items-center"
-        >
-          <div>
-            <strong>{p.firstName} {p.lastName}</strong>
-            <div className="text-muted">
-              Date of Birth: {p.dateOfBirth}
+      {!loading &&
+        !error &&
+        patients.map((p) => (
+          <div
+            key={p.id}
+            className="border rounded p-3 mb-2 d-flex justify-content-between align-items-center"
+          >
+            <div>
+              <strong>
+                {p.firstName} {p.lastName}
+              </strong>
+              <div className="text-muted">
+                Date of Birth: {p.dateOfBirth}
+              </div>
+            </div>
+
+            <div className="d-flex gap-2">
+              <Link to={`/patients/${p.id}`} className="btn btn-sm btn-info">
+                View
+              </Link>
+
+              <Link
+                to={`/patients/edit/${p.id}`}
+                className="btn btn-sm btn-warning"
+              >
+                Edit
+              </Link>
             </div>
           </div>
-
-          <div className="d-flex gap-2">
-            <Link
-              to={`/patients/${p.id}`}
-              className="btn btn-sm btn-info"
-            >
-              View
-            </Link>
-
-            <Link
-              to={`/patients/edit/${p.id}`}
-              className="btn btn-sm btn-warning"
-            >
-              Edit
-            </Link>
-          </div>
-        </div>
-      ))}
+        ))}
     </div>
   );
 }

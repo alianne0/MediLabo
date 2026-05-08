@@ -1,90 +1,60 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
+import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
 const TOKEN_KEY = "auth_token";
-const API_BASE_URL = "http://localhost:8081/api";
 
-export default function Login() {
-  const navigate = useNavigate();
-
+function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
 
-  // Redirect if already logged in
-  useEffect(() => {
-    const token = localStorage.getItem(TOKEN_KEY);
-    if (token) {
-      navigate("/");
-    }
-  }, [navigate]);
+  const navigate = useNavigate();
 
-  const handleSubmit = async (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    setError("");
 
     try {
-      const res = await fetch(`${API_BASE_URL}/auth/signin`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          username: username.trim(),
-          password: password.trim()
-        })
-      });
+      const response = await axios.post(
+        "http://localhost:8080/auth/generateToken",
+        { username, password }
+      );
 
-      if (res.status === 401) {
-        throw new Error("Invalid username or password");
-      }
+      localStorage.setItem(TOKEN_KEY, response.data);
 
-      if (!res.ok) {
-        throw new Error("Login failed");
-      }
+      navigate("/patients");
 
-
-    const token = await res.text();
-    localStorage.setItem(TOKEN_KEY, token);
-
-
-      navigate("/");
-    } catch (err) {
-      setError(err.message);
+    } catch (error) {
+      console.error("Login failed:", error);
+      alert("Invalid username or password");
     }
   };
 
   return (
-    <div className="card p-4" style={{ maxWidth: 400, margin: "0 auto" }}>
-      <h2 className="mb-3">Login</h2>
+    <div>
+      <h2>Login</h2>
 
-      {error && <div className="alert alert-danger">{error}</div>}
-
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleLogin}>
         <input
-          className="form-control mb-2"
-          placeholder="Username"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
-          required
+          placeholder="Username"
+          className="form-control mb-2"
         />
 
         <input
           type="password"
-          className="form-control mb-3"
-          placeholder="Password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          required
+          placeholder="Password"
+          className="form-control mb-2"
         />
 
-        <button
-          className="btn btn-primary w-100"
-          disabled={!username || !password}
-        >
+        <button type="submit" className="btn btn-primary">
           Login
         </button>
       </form>
     </div>
   );
 }
+
+export default Login;

@@ -1,4 +1,4 @@
-package com.medilabo.demographics.security;
+package com.medilabo.gateway.security;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;

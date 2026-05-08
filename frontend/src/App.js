@@ -1,27 +1,82 @@
 // src/App.js
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import 'bootstrap/dist/css/bootstrap.min.css';
+import React from "react";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
+import "bootstrap/dist/css/bootstrap.min.css";
 
-import Home from './components/Home';
-import PatientList from './components/PatientList';
-import PatientDetail from './components/PatientDetail';
-import PatientForm from './components/PatientForm';
-import Login from './components/Login';
+import PatientList from "./components/PatientList";
+import PatientDetail from "./components/PatientDetail";
+import PatientForm from "./components/PatientForm";
+import Login from "./components/Login";
+
+const TOKEN_KEY = "auth_token";
+
+const isAuthenticated = () => {
+  return !!localStorage.getItem(TOKEN_KEY);
+};
+
+const PrivateRoute = ({ children }) => {
+  return isAuthenticated() ? children : <Navigate to="/login" />;
+};
 
 function App() {
   return (
     <Router>
       <div className="container mt-3">
         <Routes>
-          <Route path="/" element={<PatientList />} />
 
-          {/* Patients */}
-          <Route path="/patients" element={<PatientList />} />
-          <Route path="/patients/:id" element={<PatientDetail />} />
-          <Route path="/patients/new" element={<PatientForm />} />
-          <Route path="/patients/edit/:id" element={<PatientForm />} />
-          <Route path="/Login" element={<Login />} />
+          <Route
+            path="/"
+            element={
+              isAuthenticated() ? (
+                <Navigate to="/patients" />
+              ) : (
+                <Navigate to="/login" />
+              )
+            }
+          />
+
+          <Route path="/login" element={<Login />} />
+
+          <Route
+            path="/patients"
+            element={
+              <PrivateRoute>
+                <PatientList />
+              </PrivateRoute>
+            }
+          />
+
+          <Route
+            path="/patients/:id"
+            element={
+              <PrivateRoute>
+                <PatientDetail />
+              </PrivateRoute>
+            }
+          />
+
+          <Route
+            path="/patients/new"
+            element={
+              <PrivateRoute>
+                <PatientForm />
+              </PrivateRoute>
+            }
+          />
+
+          <Route
+            path="/patients/edit/:id"
+            element={
+              <PrivateRoute>
+                <PatientForm />
+              </PrivateRoute>
+            }
+          />
         </Routes>
       </div>
     </Router>
