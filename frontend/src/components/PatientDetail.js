@@ -1,11 +1,14 @@
 import { useEffect, useState, useCallback } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 
 const API_URL = "http://localhost:8080/api/patients";
+const NOTES_URL = "http://localhost:8080/api/notes";
+const TOKEN_KEY = "auth_token";
 
 function PatientDetail() {
   const { id } = useParams();
+  const navigate = useNavigate();
 
   const [patient, setPatient] = useState({
     firstName: "",
@@ -13,29 +16,95 @@ function PatientDetail() {
     dateOfBirth: "",
     gender: "",
     address: "",
-    phone: ""
+    phone: "",
   });
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  /* Load patient (same pattern as PatientForm) */
+  const [showNotes, setShowNotes] = useState(false);
+  const [notes, setNotes] = useState([]);
+  const [notesLoading, setNotesLoading] = useState(false);
+  const [notesError, setNotesError] = useState(null);
+  const [newNote, setNewNote] = useState("");
+  const [savingNote, setSavingNote] = useState(false);
+
+  /* Load patient */
   const loadPatient = useCallback(async () => {
     if (!id) return;
 
     setLoading(true);
     setError(null);
 
+    const token = localStorage.getItem(TOKEN_KEY);
+    if (!token) {
+      navigate("/login");
+      return;
+    }
+
     try {
-      const response = await axios.get(`${API_URL}/${id}`);
+      const response = await axios.get(`${API_URL}/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       setPatient(response.data);
     } catch (err) {
-      console.error("Error loading patient:", err);
-      setError("Failed to load patient");
+      if (err.response?.status === 401 || err.response?.status === 403) {
+        localStorage.removeItem(TOKEN_KEY);
+        navigate("/login");
+      } else {
+        console.error("Error loading patient:", err);
+        setError("Failed to load patient");
+      }
     } finally {
       setLoading(false);
     }
+  }, [id, navigate]);
+
+  /* Load notes for this patient */
+  const loadNotes = useCallback(async () => {
+    setNotesLoading(true);
+    setNotesError(null);
+    const token = localStorage.getItem(TOKEN_KEY);
+    try {
+      const response = await axios.get(`${NOTES_URL}/patient/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setNotes(response.data);
+    } catch (err) {
+      console.error("Error loading notes:", err);
+      setNotesError("Failed to load notes.");
+    } finally {
+      setNotesLoading(false);
+    }
   }, [id]);
+
+  const handleOpenNotes = () => {
+    setShowNotes(true);
+    loadNotes();
+  };
+
+  const handleAddNote = async (e) => {
+    e.preventDefault();
+    if (!newNote.trim()) return;
+    setSavingNote(true);
+    const token = localStorage.getItem(TOKEN_KEY);
+    try {
+      await axios.post(
+        `${NOTES_URL}/patient/${id}`,
+        { note: newNote },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
+      setNewNote("");
+      await loadNotes();
+    } catch (err) {
+      console.error("Error saving note:", err);
+      setNotesError("Failed to save note.");
+    } finally {
+      setSavingNote(false);
+    }
+  };
 
   useEffect(() => {
     loadPatient();
@@ -72,9 +141,87 @@ function PatientDetail() {
         Edit
       </Link>
 
+      <button className="btn btn-info me-2" onClick={handleOpenNotes}>
+        Notes
+      </button>
+
       <Link to="/patients" className="btn btn-secondary">
         Back
       </Link>
+
+      {/* Notes Modal */}
+      {showNotes && (
+        <div
+          className="modal d-block"
+          style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setShowNotes(false);
+          }}
+        >
+          <div className="modal-dialog modal-lg">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title">
+                  Notes — {patient.firstName} {patient.lastName}
+                </h5>
+                <button
+                  type="button"
+                  className="btn-close"
+                  onClick={() => setShowNotes(false)}
+                />
+              </div>
+
+              <div className="modal-body">
+                {notesLoading && <p>Loading notes…</p>}
+                {notesError && <p className="text-danger">{notesError}</p>}
+
+                {!notesLoading && notes.length === 0 && (
+                  <p className="text-muted">No notes yet.</p>
+                )}
+
+                {notes.map((n) => (
+                  <div key={n.id} className="border rounded p-2 mb-2">
+                    <div className="text-muted small mb-1">
+                      {n.createdAt
+                        ? new Date(n.createdAt).toLocaleString()
+                        : ""}
+                    </div>
+                    <div>{n.note}</div>
+                  </div>
+                ))}
+
+                <hr />
+                <form onSubmit={handleAddNote}>
+                  <label className="form-label fw-semibold">Add a note</label>
+                  <textarea
+                    className="form-control mb-2"
+                    rows={3}
+                    value={newNote}
+                    onChange={(e) => setNewNote(e.target.value)}
+                    placeholder="Type note here…"
+                  />
+                  <button
+                    type="submit"
+                    className="btn btn-primary"
+                    disabled={savingNote || !newNote.trim()}
+                  >
+                    {savingNote ? "Saving…" : "Save Note"}
+                  </button>
+                </form>
+              </div>
+
+              <div className="modal-footer">
+                <button
+                  className="btn btn-secondary"
+                  onClick={() => setShowNotes(false)}
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

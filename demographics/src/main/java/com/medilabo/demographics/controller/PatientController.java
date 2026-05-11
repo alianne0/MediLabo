@@ -1,6 +1,5 @@
 package com.medilabo.demographics.controller;
 //check for token present(jwt) on each backend
-//todo: add security, jwt, sprint security
 //todo: look at docker, yaml in the root level. each microservice has a docker file
 //todo: test cases from sprint, make sure they work and u can use them in tests
 import com.medilabo.demographics.domain.Patient;
@@ -15,7 +14,7 @@ import java.util.List;
  */
 @Slf4j
 @RestController
-@RequestMapping("/patients")
+@RequestMapping("/api/patients")
 public class PatientController {
 
     private final PatientService patientService;

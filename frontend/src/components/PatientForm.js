@@ -2,8 +2,8 @@ import { useEffect, useState, useCallback } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 
-// Gateway endpoint (Option 1)
 const API_URL = "http://localhost:8080/api/patients";
+const TOKEN_KEY = "auth_token";
 
 function PatientForm() {
   const { id } = useParams();
@@ -15,7 +15,7 @@ function PatientForm() {
     dateOfBirth: "",
     gender: "",
     address: "",
-    phone: ""
+    phone: "",
   });
 
   const [loading, setLoading] = useState(false);
@@ -29,7 +29,9 @@ function PatientForm() {
     setError(null);
 
     try {
-      const response = await axios.get(`${API_URL}/${id}`);
+      const response = await axios.get(`${API_URL}/${id}`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem(TOKEN_KEY)}` },
+      });
       setPatient(response.data);
     } catch (err) {
       console.error("Error loading patient:", err);
@@ -46,7 +48,7 @@ function PatientForm() {
   const handleChange = (e) => {
     setPatient({
       ...patient,
-      [e.target.name]: e.target.value
+      [e.target.name]: e.target.value,
     });
   };
 
@@ -57,12 +59,20 @@ function PatientForm() {
     setError(null);
 
     try {
+      const token = localStorage.getItem(TOKEN_KEY);
+      if (!token) {
+        navigate("/login");
+        return;
+      }
+
       if (id) {
-        // Update existing patient
-        await axios.put(`${API_URL}/${id}`, patient);
+        await axios.put(`${API_URL}/${id}`, patient, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
       } else {
-        // Create new patient
-        await axios.post(API_URL, patient);
+        await axios.post(API_URL, patient, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
       }
 
       navigate("/patients");

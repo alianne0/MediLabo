@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 
-const API_URL = "http://localhost:8081/api/patients";
+const API_URL = "http://localhost:8080/api/patients";
 const TOKEN_KEY = "auth_token";
 
 function PatientList() {
@@ -17,8 +17,7 @@ function PatientList() {
     setLoading(true);
     setError(null);
 
-    const token = localStorage.getItem(TOKEN_KEY);console.log("TOKEN:", token);
-
+    const token = localStorage.getItem(TOKEN_KEY);
 
     if (!token) {
       navigate("/login");
@@ -35,7 +34,7 @@ function PatientList() {
 
       setPatients(response.data);
     } catch (err) {
-      if (err.response?.status === 401) {
+      if (err.response?.status === 401 || err.response?.status === 403) {
         localStorage.removeItem(TOKEN_KEY);
         navigate("/login");
       } else {
@@ -75,9 +74,7 @@ function PatientList() {
       {loading && <p>Loading...</p>}
       {error && <p className="text-danger">{error}</p>}
 
-      {!loading && !error && patients.length === 0 && (
-        <p>No patients found.</p>
-      )}
+      {!loading && !error && patients.length === 0 && <p>No patients found.</p>}
 
       {!loading &&
         !error &&
@@ -90,9 +87,7 @@ function PatientList() {
               <strong>
                 {p.firstName} {p.lastName}
               </strong>
-              <div className="text-muted">
-                Date of Birth: {p.dateOfBirth}
-              </div>
+              <div className="text-muted">Date of Birth: {p.dateOfBirth}</div>
             </div>
 
             <div className="d-flex gap-2">

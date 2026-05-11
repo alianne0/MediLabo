@@ -16,7 +16,20 @@ import Login from "./components/Login";
 const TOKEN_KEY = "auth_token";
 
 const isAuthenticated = () => {
-  return !!localStorage.getItem(TOKEN_KEY);
+  const token = localStorage.getItem(TOKEN_KEY);
+  if (!token) return false;
+  try {
+    const [, payload] = token.split(".");
+    const { exp } = JSON.parse(atob(payload));
+    if (exp && exp * 1000 < Date.now()) {
+      localStorage.removeItem(TOKEN_KEY);
+      return false;
+    }
+    return true;
+  } catch {
+    localStorage.removeItem(TOKEN_KEY);
+    return false;
+  }
 };
 
 const PrivateRoute = ({ children }) => {
@@ -28,7 +41,6 @@ function App() {
     <Router>
       <div className="container mt-3">
         <Routes>
-
           <Route
             path="/"
             element={
