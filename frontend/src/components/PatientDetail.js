@@ -4,6 +4,7 @@ import axios from "axios";
 
 const API_URL = "http://localhost:8080/api/patients";
 const NOTES_URL = "http://localhost:8080/api/notes";
+const RISK_URL = "http://localhost:8080/api/risk";
 const TOKEN_KEY = "auth_token";
 
 function PatientDetail() {
@@ -28,6 +29,10 @@ function PatientDetail() {
   const [notesError, setNotesError] = useState(null);
   const [newNote, setNewNote] = useState("");
   const [savingNote, setSavingNote] = useState(false);
+
+  const [riskLevel, setRiskLevel] = useState(null);
+  const [riskLoading, setRiskLoading] = useState(false);
+  const [riskError, setRiskError] = useState(null);
 
   /* Load patient */
   const loadPatient = useCallback(async () => {
@@ -59,6 +64,25 @@ function PatientDetail() {
       setLoading(false);
     }
   }, [id, navigate]);
+
+  /* Load risk assessment */
+  const loadRisk = useCallback(async () => {
+    if (!id) return;
+    setRiskLoading(true);
+    setRiskError(null);
+    const token = localStorage.getItem(TOKEN_KEY);
+    try {
+      const response = await axios.get(`${RISK_URL}/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setRiskLevel(response.data.riskLevel);
+    } catch (err) {
+      console.error("Error loading risk:", err);
+      setRiskError("Unable to load risk assessment.");
+    } finally {
+      setRiskLoading(false);
+    }
+  }, [id]);
 
   /* Load notes for this patient */
   const loadNotes = useCallback(async () => {
@@ -108,10 +132,27 @@ function PatientDetail() {
 
   useEffect(() => {
     loadPatient();
-  }, [loadPatient]);
+    loadRisk();
+  }, [loadPatient, loadRisk]);
 
   if (loading) return <p>Loading...</p>;
   if (error) return <p className="text-danger">{error}</p>;
+
+  const riskBadgeClass =
+    {
+      NONE: "bg-success",
+      BORDERLINE: "bg-warning text-dark",
+      IN_DANGER: "bg-danger",
+      EARLY_ONSET: "bg-dark",
+    }[riskLevel] || "bg-secondary";
+
+  const riskLabel =
+    {
+      NONE: "None",
+      BORDERLINE: "Borderline",
+      IN_DANGER: "In Danger",
+      EARLY_ONSET: "Early Onset",
+    }[riskLevel] || riskLevel;
 
   return (
     <div>
@@ -135,6 +176,15 @@ function PatientDetail() {
 
       <div className="mb-3">
         <strong>Phone:</strong> {patient.phone}
+      </div>
+
+      <div className="mb-3">
+        <strong>Diabetes Risk Assessment: </strong>
+        {riskLoading && <span className="text-muted">Loading…</span>}
+        {riskError && <span className="text-danger">{riskError}</span>}
+        {!riskLoading && !riskError && riskLevel && (
+          <span className={`badge ${riskBadgeClass} ms-1`}>{riskLabel}</span>
+        )}
       </div>
 
       <Link to={`/patients/edit/${id}`} className="btn btn-warning me-2">
