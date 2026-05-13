@@ -1,0 +1,14 @@
+services:
+  demographics:
+    image: medilabo-demographics
+    container_name: demographics-app
+    ports:
+      - "8081:8081"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://host.docker.internal:5432/postgres
+      SPRING_DATASOURCE_USERNAME: annerutecki
+      SPRING_DATASOURCE_PASSWORD: postgres
+      JWT_SECRET: thisIsMysecregtfrdesww233eggtffeeddgkjjhhtdhttebd54ndhdhfhhhshs8877465sbbdd
+      JWT_EXPIRATION: 3600000
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
