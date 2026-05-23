@@ -1,4 +1,13 @@
+# Build stage
+FROM maven:3.9-eclipse-temurin-21 AS build
+WORKDIR /app
+COPY pom.xml .
+RUN mvn dependency:go-offline -q
+COPY src ./src
+RUN mvn package -DskipTests -q
+
+# Run stage
 FROM eclipse-temurin:21-jre
-ARG JAR_FILE=target/notes-0.0.1-SNAPSHOT.jar
-COPY ${JAR_FILE} application.jar
-ENTRYPOINT ["java", "-jar", "application.jar"]
+WORKDIR /app
+COPY --from=build /app/target/notes-0.0.1-SNAPSHOT.jar app.jar
+ENTRYPOINT ["java", "-jar", "app.jar"]

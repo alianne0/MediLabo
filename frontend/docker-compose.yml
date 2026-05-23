@@ -1,6 +1,0 @@
-services:
-  frontend:
-    image: medilabo-frontend
-    container_name: frontend-app
-    ports:
-      - "3000:3000"

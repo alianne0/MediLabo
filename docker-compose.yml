@@ -1,0 +1,136 @@
+services:
+  # ── Databases ─────────────────────────────────────────────────────────────
+
+  postgres:
+    image: postgres:16
+    container_name: medilabo-postgres
+    environment:
+      POSTGRES_USER: annerutecki
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./demographics/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U annerutecki -d postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - medilabo-network
+
+  mongodb:
+    image: mongo:7
+    container_name: medilabo-mongodb
+    volumes:
+      - mongodb-data:/data/db
+      - ./notes/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - medilabo-network
+
+  # ── Backend services ───────────────────────────────────────────────────────
+
+  demographics:
+    build:
+      context: ./demographics
+      dockerfile: Dockerfile
+    container_name: medilabo-demographics
+    ports:
+      - "8081:8081"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/postgres
+      SPRING_DATASOURCE_USERNAME: annerutecki
+      SPRING_DATASOURCE_PASSWORD: postgres
+      JWT_SECRET: thisIsMysecregtfrdesww233eggtffeeddgkjjhhtdhttebd54ndhdhfhhhshs8877465sbbdd
+      JWT_EXPIRATION: 3600000
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: on-failure
+    networks:
+      - medilabo-network
+
+  notes:
+    build:
+      context: ./notes
+      dockerfile: Dockerfile
+    container_name: medilabo-notes
+    ports:
+      - "8082:8082"
+    environment:
+      SPRING_DATA_MONGODB_URI: mongodb://mongodb:27017/Cluster0
+      JWT_SECRET: thisIsMysecregtfrdesww233eggtffeeddgkjjhhtdhttebd54ndhdhfhhhshs8877465sbbdd
+      JWT_EXPIRATION: 3600000
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    restart: on-failure
+    networks:
+      - medilabo-network
+
+  risk:
+    build:
+      context: ./risk
+      dockerfile: Dockerfile
+    container_name: medilabo-risk
+    ports:
+      - "8083:8083"
+    environment:
+      DEMOGRAPHICS_URL: http://demographics:8081
+      NOTES_URL: http://notes:8082
+      JWT_SECRET: thisIsMysecregtfrdesww233eggtffeeddgkjjhhtdhttebd54ndhdhfhhhshs8877465sbbdd
+      JWT_EXPIRATION: 3600000
+    depends_on:
+      - demographics
+      - notes
+    restart: on-failure
+    networks:
+      - medilabo-network
+
+  gateway:
+    build:
+      context: ./gateway
+      dockerfile: Dockerfile
+    container_name: medilabo-gateway
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      JWT_SECRET: thisIsMysecregtfrdesww233eggtffeeddgkjjhhtdhttebd54ndhdhfhhhshs8877465sbbdd
+      JWT_EXPIRATION: 3600000
+    depends_on:
+      - demographics
+      - notes
+      - risk
+    restart: on-failure
+    networks:
+      - medilabo-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: medilabo-frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - gateway
+    networks:
+      - medilabo-network
+
+# ── Shared network ─────────────────────────────────────────────────────────
+
+networks:
+  medilabo-network:
+    driver: bridge
+
+# ── Persistent volumes ──────────────────────────────────────────────────────
+
+volumes:
+  postgres-data:
+  mongodb-data:
