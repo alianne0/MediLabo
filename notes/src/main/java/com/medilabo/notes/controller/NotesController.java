@@ -9,6 +9,10 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDateTime;
 import java.util.List;
 
+/**
+ * Controller class for handling notes related endpoints. 
+ * Provides functionality to retrieve and create notes for patients.
+ */
 @RestController
 @RequestMapping("/api/notes")
 public class NotesController {
@@ -18,12 +22,22 @@ public class NotesController {
         this.repository = repository;
     }
 
-
+    /**
+     * Retrieves the list of notes for a specific patient by their ID.
+     * @param patientId
+     * @return
+     */
     @GetMapping("/patient/{patientId}")
     public List<Notes> getNotes(@PathVariable Integer patientId) {
         return repository.findByPatientId(patientId);
     }
 
+    /**
+     * Creates a new note for a specific patient by their ID.
+     * @param patientId
+     * @param request
+     * @return saving the note to the repository and returning the created note
+     */
     @PostMapping("/patient/{patientId}")
     @ResponseStatus(HttpStatus.CREATED)
     public Notes addNoteToPatient(
@@ -37,6 +51,4 @@ public class NotesController {
 
         return repository.save(note);
     }
-
-
 }

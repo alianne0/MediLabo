@@ -11,8 +11,15 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 
+/**
+ * Configuration class for application security.
+ */
 @Configuration
 public class AppConfig {
+    /**
+     * Defines an in-memory user details service with a single admin user for authentication purposes
+     * @return
+     */
     @Bean
     public UserDetailsService userDetailsService() {
         UserDetails userDetails = User.builder().
@@ -21,10 +28,22 @@ public class AppConfig {
                 build();
         return new InMemoryUserDetailsManager(userDetails);
     }
+    
+    /**
+     * Defines a password encoder bean using BCrypt hashing algorithm for secure password storage
+     * @return
+     */
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
+    
+    /**
+     * Defines an authentication manager bean for handling authentication requests
+     * @param builder The authentication configuration
+     * @return The authentication manager
+     * @throws Exception If an error occurs while creating the authentication manager
+     */
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration builder) throws Exception {
         return builder.getAuthenticationManager();

@@ -22,19 +22,16 @@ function PatientDetail() {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-
   const [showNotes, setShowNotes] = useState(false);
   const [notes, setNotes] = useState([]);
   const [notesLoading, setNotesLoading] = useState(false);
   const [notesError, setNotesError] = useState(null);
   const [newNote, setNewNote] = useState("");
   const [savingNote, setSavingNote] = useState(false);
-
   const [riskLevel, setRiskLevel] = useState(null);
   const [riskLoading, setRiskLoading] = useState(false);
   const [riskError, setRiskError] = useState(null);
 
-  /* Load patient */
   const loadPatient = useCallback(async () => {
     if (!id) return;
 
@@ -65,7 +62,6 @@ function PatientDetail() {
     }
   }, [id, navigate]);
 
-  /* Load risk assessment */
   const loadRisk = useCallback(async () => {
     if (!id) return;
     setRiskLoading(true);
@@ -84,7 +80,6 @@ function PatientDetail() {
     }
   }, [id]);
 
-  /* Load notes for this patient */
   const loadNotes = useCallback(async () => {
     setNotesLoading(true);
     setNotesError(null);

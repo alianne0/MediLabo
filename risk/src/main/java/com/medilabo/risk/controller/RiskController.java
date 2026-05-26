@@ -8,6 +8,10 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
+/**
+ * Controller class for handling risk assessment related endpoints
+ * Provides functionality to assess the risk level of a patient based on their ID and authentication token
+ */
 @RestController
 @RequestMapping("/api/risk")
 public class RiskController {
@@ -18,6 +22,13 @@ public class RiskController {
         this.riskService = riskService;
     }
 
+    /**
+     * Endpoint to assess the risk level of a patient by their ID
+     * Requires an Authorization header with a valid JWT token
+     * @param patientId
+     * @param request
+     * @return
+     */
     @GetMapping("/{patientId}")
     public ResponseEntity<Map<String, String>> getRisk(
             @PathVariable Long patientId,

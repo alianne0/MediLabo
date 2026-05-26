@@ -1,7 +1,4 @@
 package com.medilabo.demographics.controller;
-//check for token present(jwt) on each backend
-//todo: look at docker, yaml in the root level. each microservice has a docker file
-//todo: test cases from sprint, make sure they work and u can use them in tests
 import com.medilabo.demographics.domain.Patient;
 import com.medilabo.demographics.service.PatientService;
 import lombok.extern.slf4j.Slf4j;
@@ -26,25 +23,22 @@ public class PatientController {
 
     /**
      * Get all patients or filter by last name
-     * Examples:
-     *  - GET /patients
-     *  - GET /patients?lastName=Smith
      */
     @GetMapping
     public List<Patient> getAllPatients(
             @RequestParam(required = false) String lastName, Authentication authentication) {
-        System.out.println("AUTH IN CONTROLLER: " + authentication);
-
         log.debug("GET /patients called with lastName={}", lastName);
-        System.out.println("AUTH IN CONTROLLER: " + authentication);
-
-        if (lastName != null && !lastName.isBlank()) {
-            log.info("Fetching patients by last name: {}", lastName);
-            return patientService.findByLastName(lastName);
+        try {
+            if (lastName != null && !lastName.isBlank()) {
+                log.info("Fetching patients by last name: {}", lastName);
+                return patientService.findByLastName(lastName);
+            }
+            log.info("Fetching all patients");
+            return patientService.getAllPatients();
+        } catch (Exception e) {
+            log.error("Error fetching patients with lastName={}: {}", lastName, e.getMessage(), e);
+            throw e;
         }
-        System.out.println("AUTH IN CONTROLLER: " + authentication);
-        log.info("Fetching all patients");
-        return patientService.getAllPatients();
     }
 
     /**
@@ -55,9 +49,14 @@ public class PatientController {
     @GetMapping("/{id}")
     public Patient getPatientById(@PathVariable Long id) {
         log.info("GET /patients/{} called", id);
-        Patient patient = patientService.getPatientById(id);
-        log.debug("Retrieved patient: {}", patient);
-        return patient;
+        try {
+            Patient patient = patientService.getPatientById(id);
+            log.debug("Retrieved patient: {}", patient);
+            return patient;
+        } catch (Exception e) {
+            log.error("Error fetching patient with id={}: {}", id, e.getMessage(), e);
+            throw e;
+        }
     }
 
     /**
@@ -69,12 +68,15 @@ public class PatientController {
     public Patient createPatient(@RequestBody Patient patient) {
         log.info("POST /patients called");
         log.debug("Patient payload received: {}", patient);
-
-        Patient createdPatient = patientService.createPatient(patient);
-
-        log.info("Patient created with id={}", createdPatient.getId());
-        log.debug("Created patient details: {}", createdPatient);
-        return createdPatient;
+        try {
+            Patient createdPatient = patientService.createPatient(patient);
+            log.info("Patient created with id={}", createdPatient.getId());
+            log.debug("Created patient details: {}", createdPatient);
+            return createdPatient;
+        } catch (Exception e) {
+            log.error("Error creating patient: {}", e.getMessage(), e);
+            throw e;
+        }
     }
 
     /**
@@ -87,14 +89,16 @@ public class PatientController {
     public Patient updatePatient(
             @PathVariable Long id,
             @RequestBody Patient patient) {
-
         log.info("PUT /patients/{} called", id);
         log.debug("Update payload: {}", patient);
-
-        Patient updatedPatient = patientService.updatePatient(id, patient);
-
-        log.info("Patient updated with id={}", id);
-        log.debug("Updated patient details: {}", updatedPatient);
-        return updatedPatient;
+        try {
+            Patient updatedPatient = patientService.updatePatient(id, patient);
+            log.info("Patient updated with id={}", id);
+            log.debug("Updated patient details: {}", updatedPatient);
+            return updatedPatient;
+        } catch (Exception e) {
+            log.error("Error updating patient with id={}: {}", id, e.getMessage(), e);
+            throw e;
+        }
     }
 }

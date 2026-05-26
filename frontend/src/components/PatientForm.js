@@ -21,7 +21,6 @@ function PatientForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  /* Load existing patient when editing */
   const loadPatient = useCallback(async () => {
     if (!id) return;
 

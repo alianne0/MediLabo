@@ -8,13 +8,15 @@ import io.jsonwebtoken.security.Keys;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-
 import javax.crypto.SecretKey;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
+/**
+ * Utility class for handling JWT token generation and validation.
+ */
 @Component
 public class JwtUtil {
 
@@ -26,14 +28,32 @@ public class JwtUtil {
         return Keys.hmacShaKeyFor(keyBytes);
     }
 
+    /**
+     * Extracts the username from the given JWT token.
+     * @param token The JWT token
+     * @return The username extracted from the token
+     */
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
     }
 
+    
+    /**
+     * Extracts the expiration date from the given JWT token.
+     * @param token The JWT token
+     * @return The expiration date extracted from the token
+     */
     public Date extractExpiration(String token) {
         return extractClaim(token, Claims::getExpiration);
     }
 
+    /**
+     * Extracts a specific claim from the given JWT token using the provided claims resolver function.
+     * @param token The JWT token
+     * @param claimsResolver The function to extract the claim
+     * @param <T> The type of the claim
+     * @return The extracted claim
+     */
     public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
         return claimsResolver.apply(extractAllClaims(token));
     }
@@ -50,6 +70,11 @@ public class JwtUtil {
         return extractExpiration(token).before(new Date());
     }
 
+    /**
+     * Generates a JWT token for the given user details.
+     * @param userDetails The user details
+     * @return The generated JWT token
+     */
     public String generateToken(UserDetails userDetails) {
         return createToken(new HashMap<>(), userDetails.getUsername());
     }
@@ -64,6 +89,12 @@ public class JwtUtil {
                 .compact();
     }
 
+    /**
+     * Validates the given JWT token against the provided user details by checking if the username matches and if the token is not expired.
+     * @param token
+     * @param userDetails
+     * @return
+     */
     public Boolean validateToken(String token, UserDetails userDetails) {
         final String username = extractUsername(token);
         return username.equals(userDetails.getUsername()) && !isTokenExpired(token);

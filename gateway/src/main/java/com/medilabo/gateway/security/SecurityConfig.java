@@ -14,6 +14,9 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import java.util.List;
 
+/**
+ * Security configuration class for the application.
+ */
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig{
@@ -21,6 +24,10 @@ public class SecurityConfig{
     @Autowired
     private JwtRequestFilter jwtRequestFilter;
 
+    /**
+     * Defines the CORS configuration for the application, allowing requests from http://localhost:3000 with specific methods and headers.
+     * @return The CORS configuration source
+     */
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
@@ -34,6 +41,13 @@ public class SecurityConfig{
 
         return source;
     }
+    
+    /**
+     * Defines the security filter chain for the application, configuring CORS, CSRF, authorization, and session management.
+     * @param http The HttpSecurity object to configure
+     * @return The configured SecurityFilterChain
+     * @throws Exception If an error occurs while configuring the security filter chain
+     */
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http

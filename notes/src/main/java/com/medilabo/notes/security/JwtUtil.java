@@ -12,6 +12,9 @@ import javax.crypto.SecretKey;
 import java.util.Date;
 import java.util.function.Function;
 
+/**
+ * Utility class for handling JWT operations such as token generation, validation, and extraction of claims.
+ */
 @Component
 public class JwtUtil {
 

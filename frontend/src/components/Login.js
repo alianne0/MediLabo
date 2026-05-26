@@ -16,13 +16,12 @@ function Login() {
     try {
       const response = await axios.post(
         "http://localhost:8080/auth/generateToken",
-        { username, password }
+        { username, password },
       );
 
       localStorage.setItem(TOKEN_KEY, response.data);
 
       navigate("/patients");
-
     } catch (error) {
       console.error("Login failed:", error);
       alert("Invalid username or password");
@@ -32,7 +31,6 @@ function Login() {
   return (
     <div>
       <h2>Login</h2>
-
       <form onSubmit={handleLogin}>
         <input
           value={username}

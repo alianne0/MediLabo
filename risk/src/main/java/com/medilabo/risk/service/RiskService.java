@@ -18,6 +18,11 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Locale;
 
+/**
+ * Service class responsible for assessing the risk level of a patient based on their demographics and medical notes.
+ * It interacts with the demographics and notes microservices to fetch necessary data and applies the risk assessment 
+ * logic based on predefined trigger terms and patient characteristics
+ */
 @Service
 public class RiskService {
 
@@ -38,12 +43,17 @@ public class RiskService {
         this.restTemplate = restTemplate;
     }
 
+    /**
+     * Assesses the risk level of a patient by their ID and an authorization header containing a JWT token
+     * @param patientId
+     * @param authorizationHeader
+     * @return
+     */
     public RiskLevel assess(Long patientId, String authorizationHeader) {
         HttpHeaders headers = new HttpHeaders();
         headers.set("Authorization", authorizationHeader);
         HttpEntity<Void> entity = new HttpEntity<>(headers);
 
-        // Fetch patient
         ResponseEntity<PatientDto> patientResponse = restTemplate.exchange(
                 demographicsUrl + "/api/patients/" + patientId,
                 HttpMethod.GET,
@@ -52,7 +62,6 @@ public class RiskService {
         );
         PatientDto patient = patientResponse.getBody();
 
-        // Fetch notes
         ResponseEntity<List<NoteDto>> notesResponse = restTemplate.exchange(
                 notesUrl + "/api/notes/patient/" + patientId,
                 HttpMethod.GET,
@@ -72,7 +81,6 @@ public class RiskService {
     private int countTriggers(List<NoteDto> notes) {
         if (notes == null || notes.isEmpty()) return 0;
 
-        // Build combined text from all notes, lowercased
         String allNotes = notes.stream()
                 .map(n -> n.getNote() == null ? "" : n.getNote().toLowerCase(Locale.ROOT))
                 .reduce("", (a, b) -> a + " " + b);
@@ -98,7 +106,6 @@ public class RiskService {
             if (triggers >= 2) return RiskLevel.BORDERLINE;
             return RiskLevel.NONE;
         } else {
-            // Under or equal to 30
             if (isMale) {
                 if (triggers >= 5) return RiskLevel.EARLY_ONSET;
                 if (triggers >= 3) return RiskLevel.IN_DANGER;
