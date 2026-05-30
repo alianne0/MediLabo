@@ -5,6 +5,7 @@ Hello and welcome to my MediLabo project for openclassrooms Java and Spring cour
 To get this application running, clone this repository and open it in the code editor of your choice. Open the terminal and make sure you are in the root directly. Also ensure you have docker downloaded. Type "docker compose up" and viola!
 
 Username: admin
+
 Password: admin123
 
 A few notes about how this application is "green" and environmentally friendly.
