@@ -1,6 +1,6 @@
 # MediLabo
 
-Hello and welcome to my MediLabo project for openclassrooms Java and Spring course.
+Hello and welcome to Anne Rutecki's MediLabo project for openclassrooms Java and Spring course.
 
 To get this application running, clone this repository and open it in the code editor of your choice. Open the terminal and make sure you are in the root directly. Also ensure you have docker downloaded. Type "docker compose up" and viola!
 
