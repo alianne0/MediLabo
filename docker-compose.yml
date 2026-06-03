@@ -1,6 +1,4 @@
 services:
-  # ── Databases ─────────────────────────────────────────────────────────────
-
   postgres:
     image: postgres:16
     container_name: medilabo-postgres
@@ -32,8 +30,6 @@ services:
       retries: 5
     networks:
       - medilabo-network
-
-  # ── Backend services ───────────────────────────────────────────────────────
 
   demographics:
     build:
@@ -123,13 +119,9 @@ services:
     networks:
       - medilabo-network
 
-# ── Shared network ─────────────────────────────────────────────────────────
-
 networks:
   medilabo-network:
     driver: bridge
-
-# ── Persistent volumes ──────────────────────────────────────────────────────
 
 volumes:
   postgres-data:
